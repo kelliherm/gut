@@ -1,20 +1,12 @@
-use std::path::PathBuf;
-
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(version, about, long_about = None)]
+#[command(name = "Gut")]
+#[command(about = "A fully featured version control system written in Rust.", long_about = None)]
 struct Cli {
-    /// Optional name to operate on
-    name: Option<String>,
-
-    /// Sets a custom config file
-    #[arg(short, long, value_name = "FILE")]
-    config: Option<PathBuf>,
-
-    /// Turn debugging information on
-    #[arg(short, long, action = clap::ArgAction::Count)]
-    debug: u8,
+    /// Your name
+    //#[arg(short, long)]
+    //name: Option<String>,
 
     #[command(subcommand)]
     command: Option<Commands>,
@@ -22,47 +14,65 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// does testing things
-    Test {
-        /// lists test values
+    /// Say hello
+    Greet {
+        /// Name to greet
         #[arg(short, long)]
-        list: bool,
+        name: Option<String>,
+    },
+
+    Speak {
+        #[arg(short, long)]
+        message_to_speak: Option<String>,
+    },
+
+    Init,
+
+    Status,
+
+    Commit {
+        #[arg(short, long)]
+        message: Option<String>,
+    },
+
+    Branch {
+        #[arg(short, long)]
+        name: Option<String>,
     },
 }
 
 fn main() {
     let cli = Cli::parse();
 
-    // You can check the value provided by positional arguments, or option arguments
-    if let Some(name) = cli.name.as_deref() {
-        println!("Value for name: {name}");
-    }
+    /*// Optional name flag
+    if let Some(name) = &cli.name {
+        println!("Hi, {}!", name);
+    }*/
 
-    if let Some(config_path) = cli.config.as_deref() {
-        println!("Value for config: {}", config_path.display());
-    }
-
-    // You can see how many times a particular flag or argument occurred
-    // Note, only flags can have multiple occurrences
-    match cli.debug {
-        0 => println!("Debug mode is off"),
-        1 => println!("Debug mode is kind of on"),
-        2 => println!("Debug mode is on"),
-        _ => println!("Don't be crazy"),
-    }
-
-    // You can check for the existence of subcommands, and if found use their
-    // matches just as you would the top level cmd
+    // Subcommand logic
     match &cli.command {
-        Some(Commands::Test { list }) => {
-            if *list {
-                println!("Printing testing lists...");
-            } else {
-                println!("Not printing testing lists...");
-            }
+        Some(Commands::Speak { message_to_speak }) => {
+            let message_to_speak = message_to_speak.as_deref().unwrap_or("No Message Specified");
+            println!("{}", message_to_speak);
+        }
+        Some(Commands::Init) => {
+            println!("Repository initialized")
+        }
+        Some(Commands::Status) => {
+            println!("Everything is up to date!");
+        }
+        Some(Commands::Commit { message }) => {
+            println!("A commit has been made!");
+            let message = message.as_deref().unwrap_or("No Message Specified");
+            println!("Commit made with the message {}", message);
+        }
+        Some(Commands::Branch { name }) => {
+            println!("A branch has been made");
+            let name = name.as_deref().unwrap_or("No Name Specified");
+            println!("A branch as been made named {}", name);
         }
         None => {}
+        &Some(Commands::Greet { .. }) => todo!()
     }
-
-    // Continued program logic goes here...
+    println!("Nothing was passed!"); // This line doesn't work as intended
 }
